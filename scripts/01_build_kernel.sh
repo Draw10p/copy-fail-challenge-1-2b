@@ -13,6 +13,9 @@ KERNEL_SRC="$WORKSPACE_ROOT/kernel/linux"
 BUILD_DIR="$WORKSPACE_ROOT/kernel/build"
 JOBS=$(nproc)
 
+# Forzar recompilación borrando binario anterior
+rm -f "$BUILD_DIR/bzImage_vuln"
+
 GREEN='\033[1;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[1;36m'
@@ -29,10 +32,15 @@ else
 fi
 
 cd "$KERNEL_SRC"
+
+# Asegurar compilación limpia
+echo -e "${CYAN}[Limpiando compilación anterior...]${NC}"
+make clean 2>&1 | tail -2
+
 echo ""
 echo -e "${CYAN}[2/5] Guardando hash del commit vulnerable (evidencia)...${NC}"
 VULN_HASH=$(git rev-parse HEAD)
-echo "$VULN_HASH" > /workspaces/copy-fail-challenge/kernel/vuln_commit.txt
+echo "$VULN_HASH" > /workspaces/copy-fail-challenge-1-2b/kernel/vuln_commit.txt
 echo "  Hash: $VULN_HASH"
 
 echo ""
@@ -59,7 +67,7 @@ scripts/config --enable CRYPTO
 scripts/config --enable CRYPTO_USER_API        # AF_ALG base
 scripts/config --enable CRYPTO_USER_API_AEAD   # algif_aead  ← VULNERABLE
 scripts/config --enable CRYPTO_USER_API_SKCIPHER
-scripts/config --enable CRYPTO_AUTHENCESN      # el template que escribe de más
+scripts/config --enable CRYPTO_AUTHENC         # authencesn() y authenc() templates
 scripts/config --enable CRYPTO_AES
 scripts/config --enable CRYPTO_CBC
 scripts/config --enable CRYPTO_HMAC

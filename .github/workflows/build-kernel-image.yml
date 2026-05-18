@@ -82,7 +82,7 @@ jobs:
           ./scripts/config --enable CRYPTO_USER_API_AEAD     # algif_aead ← VULN
           ./scripts/config --enable CRYPTO_USER_API_SKCIPHER
           ./scripts/config --enable CRYPTO_AEAD
-          ./scripts/config --enable CRYPTO_AUTHENCESN        # scratch-write bug
+          ./scripts/config --enable CRYPTO_AUTHENC           # authencesn() template
           ./scripts/config --enable CRYPTO_AES
           ./scripts/config --enable CRYPTO_CBC
           ./scripts/config --enable CRYPTO_HMAC
@@ -101,7 +101,7 @@ jobs:
           
           # Verificar que el módulo vulnerable está habilitado
           grep "CONFIG_CRYPTO_USER_API_AEAD" .config && echo "✓ algif_aead habilitado" || echo "✗ ADVERTENCIA: no encontrado"
-          grep "CONFIG_CRYPTO_AUTHENCESN" .config && echo "✓ authencesn habilitado" || echo "✗ ADVERTENCIA: no encontrado"
+          grep "CONFIG_CRYPTO_AUTHENC" .config && echo "✓ authencesn/authenc habilitado" || echo "✗ ADVERTENCIA: no encontrado"
 
       # ── 4. Compilar (4 cores en el runner de GitHub) ──────────────────────
       - name: Compilar bzImage
@@ -132,7 +132,7 @@ jobs:
             "fix_commit": "a664bf3d603d",
             "cve": "CVE-2026-31431",
             "config_crypto_user_api_aead": "y",
-            "config_crypto_authencesn": "y",
+            "config_crypto_authenc": "y",
             "built_by": "github-actions",
             "built_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
             "sha256_bzimage": "$(sha256sum release-assets/bzImage_vuln | cut -d' ' -f1)"
@@ -174,7 +174,7 @@ jobs:
             - **Kernel:** ${{ github.event.inputs.kernel_tag }} (commit `${{ env.KERNEL_COMMIT }}`)
             - **Commit vulnerable:** `72548b093ee3` (2017, optimización in-place algif_aead)
             - **Fix:** `a664bf3d603d` — NO incluido en este build
-            - **Módulos vulnerables:** `CONFIG_CRYPTO_USER_API_AEAD=y`, `CONFIG_CRYPTO_AUTHENCESN=y`
+            - **Módulos vulnerables:** `CONFIG_CRYPTO_USER_API_AEAD=y`, `CONFIG_CRYPTO_AUTHENC=y`
             
             ### Instrucciones para estudiantes
             ```bash

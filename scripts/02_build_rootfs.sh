@@ -119,6 +119,25 @@ INITEOF
 
 chmod +x "$INITRAMFS_DIR/init"
 
+# ── ANTES de empaquetar: inyectar exploit y fijar permisos SUID ───────────────
+echo -e "${CYAN}[5.5/6] Preparando exploit y permisos SUID...${NC}"
+
+# Compilar exploit estático
+gcc -static "$WORKSPACE_ROOT/exploit_c.c" -o "$INITRAMFS_DIR/home/student/exploit_c"
+chmod +x "$INITRAMFS_DIR/home/student/exploit_c"
+chown -R 1001:1001 "$INITRAMFS_DIR/home/student" 2>/dev/null || true
+
+# IMPORTANTE: Establecer bit SUID en 'su' ANTES de empaquetar
+if [ -f "$INITRAMFS_DIR/bin/su" ]; then
+    chmod 4755 "$INITRAMFS_DIR/bin/su"
+    echo -e "  ✓ SUID establecido en bin/su"
+elif [ -f "$INITRAMFS_DIR/usr/bin/su" ]; then
+    chmod 4755 "$INITRAMFS_DIR/usr/bin/su"
+    echo -e "  ✓ SUID establecido en usr/bin/su"
+else
+    echo -e "  ⚠ Advertencia: no se encontró 'su' para establecer SUID"
+fi
+
 echo -e "${CYAN}[6/6] Empaquetando initramfs...${NC}"
 cd "$INITRAMFS_DIR"
 find . | cpio -o -H newc | gzip > "$BUILD_DIR/initramfs.cpio.gz"
