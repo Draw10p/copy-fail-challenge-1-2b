@@ -65,7 +65,9 @@ scripts/config --enable INET
 # ── LA PIEZA CLAVE: API crypto expuesta a userspace ──────────────────────────
 scripts/config --enable CRYPTO
 scripts/config --enable CRYPTO_USER_API        # AF_ALG base
-scripts/config --enable CRYPTO_USER_API_AEAD   # algif_aead  ← VULNERABLE
+
+
+scripts/config --enable CRYPTO_USER_API_AEAD
 scripts/config --enable CRYPTO_USER_API_SKCIPHER
 scripts/config --enable CRYPTO_AUTHENC         # authencesn() y authenc() templates
 scripts/config --enable CRYPTO_AES
@@ -85,7 +87,14 @@ scripts/config --enable RD_GZIP        # descomprimir initramfs gzip
 scripts/config --enable BINFMT_ELF     # ejecutar binarios ELF (BusyBox)
 scripts/config --enable BINFMT_SCRIPT  # ejecutar scripts de shell (init)
 
+# Validar la configuración antes de compilar
+echo -e "${CYAN}[4/5] Validando configuración del kernel...${NC}"
 make olddefconfig
+
+# ── PASO CRÍTICO: Convertir algif_aead a MÓDULO (=m) para Hito 3 ─────────────
+# DEBE ser DESPUÉS de make olddefconfig para que persista
+grep -v "CONFIG_CRYPTO_USER_API_AEAD" .config > .config.tmp && mv .config.tmp .config
+echo "CONFIG_CRYPTO_USER_API_AEAD=m" >> .config
 
 echo ""
 echo -e "${CYAN}[4/5] Compilando kernel con ${JOBS} cores (esto toma ~15-25 min)...${NC}"

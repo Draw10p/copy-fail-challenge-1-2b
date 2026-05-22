@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 # scripts/04_build_patched_kernel.sh
 # Aplica el parche de CVE-2026-31431 y recompila el kernel

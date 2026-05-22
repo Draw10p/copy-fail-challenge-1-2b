@@ -1,0 +1,21 @@
+diff --git a/crypto/algif_aead.c b/crypto/algif_aead.c
+index 7d58cbbce..defghijkl 100644
+--- a/crypto/algif_aead.c
++++ b/crypto/algif_aead.c
+@@ -61,11 +61,17 @@ static int aead_sendmsg(struct socket *sock, struct msghdr *msg, size_t size)
+ 	struct aead_tfm *aeadc = pask->private;
+ 	struct crypto_aead *tfm = aeadc->aead;
+ 	unsigned int ivsize = crypto_aead_ivsize(tfm);
++
++	/* CVE-2026-31431 FIX: Reject splice operations for AEAD */
++	/* Splice can lead to in-place corruption if recvmsg is not called properly */
++	if (msg && (msg->msg_flags & MSG_SPLICE_PAGES)) {
++		return -EINVAL;  /* Do not allow splice */
++	}
+ 
+ 	return af_alg_sendmsg(sock, msg, size, ivsize);
+ }
+ 
+ static int crypto_aead_copy_sgl(struct crypto_sync_skcipher *null_tfm,
+ 				struct scatterlist *src,
+ 				struct scatterlist *dst, unsigned int len)
